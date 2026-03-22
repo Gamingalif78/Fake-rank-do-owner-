@@ -1,24 +1,29 @@
-package com.example;
+package net.fabricmc.example.mixin;
 
-import net.fabricmc.api.ModInitializer;
+import net.minecraft.client.gui.hud.PlayerListHud;
+import net.minecraft.client.network.PlayerListEntry;
+import net.minecraft.text.Text;
+import net.minecraft.text.MutableText;
+import net.minecraft.util.Formatting;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+@Mixin(PlayerListHud.class)
+public class ExampleMixin {
 
-public class ExampleMod implements ModInitializer {
-	public static final String MOD_ID = "modid";
+    private static final String MY_NAME = "Zyq_Playz"; 
 
-	// This logger is used to write text to the console and the log file.
-	// It is considered best practice to use your mod id as the logger's name.
-	// That way, it's clear which mod wrote info, warnings, and errors.
-	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+    @Inject(method = "getPlayerName", at = @At("HEAD"), cancellable = true)
+    private void hideServerRankAndShowOwner(PlayerListEntry entry, CallbackInfoReturnable<Text> cir) {
+        String playerName = entry.getProfile().getName();
 
-	@Override
-	public void onInitialize() {
-		// This code runs as soon as Minecraft is in a mod-load-ready state.
-		// However, some things (like resources) may still be uninitialized.
-		// Proceed with mild caution.
-
-		LOGGER.info("Hello Fabric world!");
-	}
+        if (playerName.equalsIgnoreCase(MY_NAME)) {
+            MutableText customName = Text.literal("OWNER ").formatted(Formatting.RED)
+                    .append(Text.literal(playerName).formatted(Formatting.WHITE));
+            
+            cir.setReturnValue(customName);
+        }
+    }
 }
